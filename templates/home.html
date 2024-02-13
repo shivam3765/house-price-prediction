@@ -1,17 +1,135 @@
 <!DOCTYPE html>
 <html>
-    <head>
-        <title>Home</title>
-    </head>
-    <body>
-        <h1>Hello world</h1>
-        <form action="http://localhost:8000/submit_form" method="post">
-            <label for="bedrooms">Number of Bedrooms</label>
-            <input type="bedrooms" id="bedrooms" name="bedrooms">
-            <label for="bathrooms">Number of Bathrooms</label>
-            <input type="bathrooms" id="bathrooms" name="bathrooms">
+  <head>
+    <title>Home price prediction</title>
+    <script>
+      async function predict() {
+        const formData = new FormData();
+        formData.append(
+          "House_age",
+          document.getElementById("House_age").value
+        );
+        formData.append(
+          "Distance_to_the_nearest_MRT_station",
+          document.getElementById("Distance_to_the_nearest_MRT_station").value
+        );
+        formData.append(
+          "Number_of_convenience_stores",
+          document.getElementById("Number_of_convenience_stores").value
+        );
+        formData.append("Latitude", document.getElementById("Latitude").value);
+        formData.append(
+          "Longitude",
+          document.getElementById("Longitude").value
+        );
 
-            <input type="submit" value="submit">
-        </form>
-    </body>
+        const response = await fetch("http://localhost:8000/predict_api", {
+          method: "POST",
+          body: formData,
+        });
+
+        const result = await response.json();
+        document.getElementById("prediction").innerText =
+          "The predicted price is " + result.result;
+      }
+    </script>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+        background-color: #f0f0f0;
+      }
+
+      .container {
+        max-width: 600px;
+        width: 100%;
+        background-color: #fff;
+        border-radius: 8px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        padding: 40px;
+        box-sizing: border-box;
+      }
+
+      h1 {
+        text-align: center;
+        margin-bottom: 30px;
+      }
+
+      form {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        grid-gap: 20px;
+      }
+
+      label {
+        font-size: 16px;
+      }
+
+      input[type="text"] {
+        width: 100%;
+        padding: 10px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        box-sizing: border-box;
+      }
+
+      input[type="submit"] {
+        width: 100%;
+        padding: 12px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+      }
+
+      input[type="submit"]:hover {
+        background-color: #0056b3;
+      }
+
+      #prediction {
+        margin-top: 20px;
+        text-align: center;
+        font-size: 18px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Real Estate House Price Prediction</h1>
+      <form onsubmit="event.preventDefault(); predict()">
+        <label for="House_age">House age</label>
+        <input type="text" id="House_age" name="House age" />
+        <label for="Distance_to_the_nearest_MRT_station"
+          >Distance to the nearest MRT station</label
+        >
+        <input
+          type="Distance_to_the_nearest_MRT_station"
+          id="Distance_to_the_nearest_MRT_station"
+          name="Distance to the nearest MRT station"
+        />
+        <label for="Number_of_convenience_stores"
+          >Number of convenience stores</label
+        >
+        <input
+          type="text"
+          id="Number_of_convenience_stores"
+          name="Number of convenience stores"
+        />
+        <label for="Latitude">Latitude</label>
+        <input type="text" id="Latitude" name="Latitude" />
+        <label for="Longitude">Longitude</label>
+        <input type="text" id="Longitude" name="Longitude" />
+
+        <input type="submit" value="submit" />
+      </form>
+      <div id="prediction"></div>
+    </div>
+  </body>
 </html>

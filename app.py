@@ -1,30 +1,34 @@
-from fastapi import FastAPI, Form, Request, Response, File
-from fastapi.encoders import jsonable_encoder
+from fastapi import FastAPI, Request, Form
 from fastapi.staticfiles import StaticFiles
-from starlette.responses import FileResponse
+from fastapi.templating import Jinja2Templates
 import uvicorn
-import os
-import json
-
+import pickle
 
 app = FastAPI()
-app.mount("/static", StaticFiles(directory="templates", html = True))
+app.mount("/static", StaticFiles(directory="templates", html=True))
+templates = Jinja2Templates(directory="templates")
 
-
-@app.get("/")
-async def index():
-    return FileResponse("home.html")
-
-@app.post("/submit_form")
-async def submit_detail(bedrooms: int = Form(...), bathrooms: int = Form(...)):
-    return {
-        "bedrooms": bedrooms,
-        "bathrooms": bathrooms
-    }
+model = pickle.load(open("model.pkl", "rb"))
 
 @app.get("/")
-async def get_details()
+async def index(request: Request):
+    return templates.TemplateResponse("home.html", {"request": request, "prediction_text": ""})
 
+@app.post("/predict_api")
+async def predict_api(request: Request, 
+                      House_age: float = Form(...), 
+                      Distance_to_the_nearest_MRT_station: float = Form(...), 
+                      Number_of_convenience_stores: float = Form(...),
+                      Latitude: float = Form(...),
+                      Longitude: float = Form(...),
+                      ):
+    try:
+        prediction_result = [House_age, Distance_to_the_nearest_MRT_station,Number_of_convenience_stores,
+                                      Latitude, Longitude]
+        predicted_result = model.predict([prediction_result])
+        return {"result": "{:.2f}".format(predicted_result[0])}
+    except Exception as e:
+        return {"error": str(e)}
 
 if __name__ == "__main__":
     uvicorn.run("app:app", host='0.0.0.0', port=8000, reload=True)
